@@ -33,6 +33,7 @@ class Game {
                     options: [
                         new PlaceOptionPlace({
                             name: "创意城",
+                            desc: "约会",
                         }),
                         new PlaceOptionActivity({
                             name: "信图学习",
@@ -42,6 +43,23 @@ class Game {
                                     name: "功课",
                                     diff: 1,
                                 },
+                                {
+                                    name: "学识",
+                                    diff: 20,
+                                },
+                            ],
+                        }),
+                    ],
+                }),
+                new Place({
+                    name: "创意城",
+                    desc: "今天和谁一起玩呢",
+                    options: [
+                        new PlaceOptionActivity({
+                            name: "夜猫星",
+                            hide: true,
+                            power: 2,
+                            effects: [
                                 {
                                     name: "学识",
                                     diff: 20,
@@ -82,11 +100,13 @@ class Utils {
         return el;
     }
 }
+
 class WHUerAttr {
     constructor(params) {
         const { name, value } = params;
         this.name = name;
         this.value = value;
+        this.listeners = [];
         this.el = Utils.createEl({});
         this.update();
     }
@@ -96,8 +116,14 @@ class WHUerAttr {
     }
 
     change(diff) {
+        const oldValue = this.value;
         this.value += diff;
         this.update();
+        this.listeners.forEach((listener) => listener(this.value, oldValue));
+    }
+
+    addListener(listener) {
+        this.listeners.push(listener);
     }
 }
 
@@ -132,6 +158,14 @@ class WHUer {
         this.el = Utils.createEl({
             nodes: this.attrs.map((attr) => attr.el),
         });
+
+        this.getAttr("学识").addListener((value) => {
+            if (value > 110)
+                game.placeManager
+                    .getPlace("创意城")
+                    .getOption("夜猫星")
+                    .unHide();
+        });
     }
 
     getAttr(name) {
@@ -162,7 +196,9 @@ class PlaceManager {
             console.log("无法回退到更早");
             return;
         }
-        this._setPlace(this.previousPlaces.pop());
+        this.place = this.previousPlaces.pop();
+        this.el.innerHTML = "";
+        this.el.append(this.place.el);
     }
 
     getPlace(name) {
@@ -174,29 +210,30 @@ class PlaceManager {
         return results[0];
     }
 
-    _setPlace(place) {
+
+
+    setPlace(name) {
+        const place = this.getPlace(name);
+        if (!place) return;
         if (this.place) this.previousPlaces.push(this.place);
         this.place = place;
 
         this.el.innerHTML = "";
         this.el.append(place.el);
     }
-
-    setPlace(name) {
-        const place = this.getPlace(name);
-        if (!place) return;
-        this._setPlace(place);
-    }
 }
 
 class Place {
     constructor(params) {
-        const { name, options, root = false } = params;
+        const { name, options, root = false, desc = "" } = params;
         this.name = name;
         this.root = root;
+        this.desc = desc;
         this.options = options;
 
-        const nodes = [
+        const nodes = [];
+
+        nodes.push(
             Utils.createEl({
                 innerHTML: name,
                 style: {
@@ -204,11 +241,23 @@ class Place {
                     fontWeight: "bold",
                     fontSize: "20px",
                 },
-            }),
-            ...options.map((option) => option.el),
-        ];
+            })
+        );
 
-        if (!root) {
+        if (desc)
+            nodes.push(
+                Utils.createEl({
+                    innerHTML: desc,
+                    style: {
+                        padding: "6px",
+                        paddingTop: 0,
+                    },
+                })
+            );
+
+        nodes.push(...options.map((option) => option.el));
+
+        if (!root)
             nodes.push(
                 Utils.createEl({
                     innerHTML: "返回",
@@ -224,20 +273,29 @@ class Place {
                     },
                 })
             );
-        }
 
         this.el = Utils.createEl({
             nodes: nodes,
         });
     }
+
+    getOption(name) {
+        const results = this.options.filter((option) => option.name === name);
+        if (results.length < 1) {
+            console.log("(PlaceOption, " + name + ") doesn't exist");
+            return;
+        }
+        return results[0];
+    }
 }
 
 class PlaceOptionPlace {
     constructor(params) {
-        const { name } = params;
+        const { name, desc = "" } = params;
         this.name = name;
+        this.desc = desc;
         this.el = Utils.createEl({
-            innerHTML: name,
+            innerHTML: `${name} <i>${desc}</i>`,
             style: {
                 border: "1px solid black",
                 padding: "5px",
@@ -254,8 +312,9 @@ class PlaceOptionPlace {
 
 class PlaceOptionActivity {
     constructor(params) {
-        const { name, effects, power } = params;
+        const { name, effects, power, hide = false } = params;
         this.name = name;
+        this.hide = hide;
         this.effects = effects;
         this.power = power;
         this.el = Utils.createEl({
@@ -264,6 +323,7 @@ class PlaceOptionActivity {
                 border: "1px solid black",
                 padding: "5px",
                 margin: "2px 0",
+                display: hide ? "none" : "",
                 borderRadius: "3px",
                 backgroundColor: "orange",
             },
@@ -279,6 +339,11 @@ class PlaceOptionActivity {
                 });
             },
         });
+    }
+
+    unHide() {
+        this.hide = false;
+        this.el.style.display = "";
     }
 }
 
