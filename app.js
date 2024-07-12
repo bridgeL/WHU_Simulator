@@ -1,93 +1,278 @@
 class Game {
     constructor() {
-        this.whuer = new WHUer({
-            name: "susan",
-            major: "弘毅学堂",
-            talents: [
-                {
-                    name: "家境",
-                    value: 100,
-                },
-                {
-                    name: "智力",
-                    value: 100,
-                },
-            ],
-        });
-        this.placeManager = new PlaceManager({
-            places: [
-                new Place({
-                    name: "武汉大学",
-                    root: true,
-                    options: [
-                        new PlaceOptionPlace({
-                            name: "信息学部",
-                        }),
-                        new PlaceOptionPlace({
-                            name: "总部",
-                        }),
-                    ],
-                }),
-                new Place({
-                    name: "信息学部",
-                    options: [
-                        new PlaceOptionPlace({
-                            name: "创意城",
-                            desc: "约会",
-                        }),
-                        new PlaceOptionActivity({
-                            name: "信图学习",
-                            power: 2,
-                            effects: [
-                                {
-                                    name: "功课",
-                                    diff: 1,
-                                },
-                                {
-                                    name: "学识",
-                                    diff: 20,
-                                },
-                            ],
-                        }),
-                    ],
-                }),
-                new Place({
-                    name: "创意城",
-                    desc: "今天和谁一起玩呢",
-                    options: [
-                        new PlaceOptionActivity({
-                            name: "夜猫星",
-                            hide: true,
-                            power: 2,
-                            effects: [
-                                {
-                                    name: "学识",
-                                    diff: 20,
-                                },
-                            ],
-                        }),
-                    ],
-                }),
-            ],
-        });
-        this.placeManager.setPlace("武汉大学");
+        this.currentYear = 1;
+        this.currentMonth = 9; // 学年从9月开始
+        this.whuer = null;
+        this.friends = [];
+        this.city = '';
+        this.renderWelcomePage();
+    }
 
-        // debug
-        root.append(this.whuer.el);
-        root.append(this.placeManager.el);
+    renderWelcomePage() {
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+        const welcomeText = Utils.createEl({
+            innerHTML: '欢迎来到-武大模拟器demo版，请开启你的人生',
+            style: { fontSize: '48px', textAlign: 'center', margin: '20px' }
+        });
+        const startButton = Utils.createEl({
+            tag: 'button',
+            innerHTML: '开始',
+            style: { display: 'block', margin: '20px auto', padding: '10px 20px' },
+            onclick: () => this.renderCityPage()
+        });
+        root.append(welcomeText, startButton);
+    }
+
+    renderCityPage() {
+        const cities = ['北京', '上海', '广州', '深圳', '武汉'];
+        const randomIndex = Math.floor(Math.random() * cities.length);
+        this.city = cities[randomIndex];
+
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+        const cityText = Utils.createEl({
+            innerHTML: `你出生在${this.city}，家境优渥，开开心心度过了人生的前18年，要步入大学了，你成绩不错，高考稳定发挥，获得了565分的好成绩！`,
+            style: { fontSize: '24px', textAlign: 'center', margin: '20px' }
+        });
+
+        const nextButton = Utils.createEl({
+            tag: 'button',
+            innerHTML: '报志愿',
+            style: { display: 'block', margin: '20px auto', padding: '10px 20px' },
+            onclick: () => this.renderUniversitySelectionPage()
+        });
+        root.append(cityText, nextButton);
+    }
+    
+    renderUniversitySelectionPage() {
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+        const questionText = Utils.createEl({
+            innerHTML: '请选择你的大学和专业',
+            style: { fontSize: '24px', textAlign: 'center', margin: '20px' }
+        });
+    
+        const universities = [
+            { name: '北京大学', majors: ['天体物理', '理论与应用力学'] },
+            { name: '武汉大学', majors: ['计算机', '电信', '英语'] },
+            { name: '佳丽顿大学', majors: ['睡觉科学', '摆烂学', '糊弄学'] }
+        ];
+    
+        const universitySelect = Utils.createEl({
+            tag: 'select',
+            id: 'universitySelect',
+            style: { display: 'block', margin: '10px auto', padding: '5px' }
+        });
+        universities.forEach(university => {
+            const option = document.createElement('option');
+            option.value = university.name;
+            option.innerHTML = university.name;
+            universitySelect.appendChild(option);
+        });
+    
+        const majorSelect = Utils.createEl({
+            tag: 'select',
+            id: 'majorSelect',
+            style: { display: 'block', margin: '10px auto', padding: '5px' }
+        });
+    
+        universitySelect.onchange = () => {
+            const selectedUniversity = universities.find(university => university.name === universitySelect.value);
+            majorSelect.innerHTML = '';
+            selectedUniversity.majors.forEach(major => {
+                const option = document.createElement('option');
+                option.value = major;
+                option.innerHTML = major;
+                majorSelect.appendChild(option);
+            });
+        };
+    
+        universitySelect.onchange();
+    
+        const submitButton = Utils.createEl({
+            tag: 'button',
+            innerHTML: '确定',
+            style: { display: 'block', margin: '20px auto', padding: '10px 20px' },
+            onclick: () => {
+                const university = universitySelect.value;
+                const major = majorSelect.value;
+    
+                if (university === '北京大学') {
+                    if (confirm('你的分数可能进不了北京大学哦，不如看看平替吧')) {
+                        // 返回选择界面
+                        this.renderUniversitySelectionPage();
+                    } else {
+                        // 落榜，重新开始游戏
+                        alert('很遗憾，你落榜了！');
+                        this.renderWelcomePage();
+                    }
+                } else if (university === '佳丽顿大学') {
+                    if (confirm('你的水平完全可以去更好的学校啊，真的不后悔吗？')) {
+                        // 返回选择界面
+                        this.renderUniversitySelectionPage();
+                    } else {
+                        // 被录取进佳丽顿大学并发现学校倒闭
+                        alert('恭喜你，被录取进佳丽顿大学！');
+                        alert('去上学的时候发现学校倒闭了');
+                        this.renderWelcomePage();
+                    }
+                } else {
+                    // 其他正常选择
+                    this.whuer = new WHUer({ name: '学生', major, university });
+                    this.renderGamePage();
+                }
+            }
+        });
+    
+        root.append(questionText, universitySelect, majorSelect, submitButton);
+    }
+    
+    renderGamePage() {
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+
+        const header = Utils.createEl({
+            innerHTML: `第${this.currentYear}年${this.currentMonth}月`,
+            style: { fontSize: '24px', textAlign: 'center', margin: '20px' }
+        });
+
+        const optionsContainer = Utils.createEl({
+            style: { display: 'flex', justifyContent: 'center', gap: '10px' }
+        });
+
+        const options = [
+            { name: '图书馆', action: () => this.whuer.changeAttr('学习', 1) },
+            { name: '操场', action: () => this.whuer.changeAttr('运动', 1) },
+            { name: '寝室', action: () => this.handleDormitory() }
+        ];
+
+        if (this.currentMonth === 3) {
+            options.push({ name: '樱花', action: () => this.handleSakura() });
+        }
+
+        options.forEach(option => {
+            const button = Utils.createEl({
+                tag: 'button',
+                innerHTML: option.name,
+                style: { padding: '10px 20px' },
+                onclick: () => {
+                    option.action();
+                    this.nextMonth();
+                    if (this.currentYear === 5 && this.currentMonth === 6) {
+                        this.renderGraduationPage();
+                    } else {
+                        this.renderGamePage();
+                    }
+                }
+            });
+            optionsContainer.appendChild(button);
+        });
+
+        const friendsContainer = this.renderFriendsList();
+
+        root.append(header, optionsContainer, friendsContainer);
+    }
+
+    nextMonth() {
+        this.currentMonth += 1;
+        if (this.currentMonth > 12) {
+            this.currentMonth = 1;
+            this.currentYear += 1;
+        }
+    }
+
+    handleDormitory() {
+        this.whuer.changeAttr('休息', 1);
+        if (!this.friends.find(friend => friend.name === '猫猫星')) {
+            const friend = { name: '猫猫星', favorability: 5 };
+            this.friends.push(friend);
+            alert('你结识了室友猫猫星');
+        } else {
+            const friend = this.friends.find(friend => friend.name === '猫猫星');
+            friend.favorability += 2;
+        }
+    }
+
+    handleSakura() {
+        if (!this.friends.find(friend => friend.name === '新阳')) {
+            const friend = { name: '新阳', favorability: 5 };
+            this.friends.push(friend);
+            alert('你结识了新阳');
+        }
+    }
+
+    renderFriendsList() {
+        const friendsContainer = Utils.createEl({
+            style: { marginTop: '20px' }
+        });
+        const friendsTitle = Utils.createEl({
+            innerHTML: '朋友列表',
+            style: { fontSize: '18px', textAlign: 'center', margin: '10px' }
+        });
+        friendsContainer.appendChild(friendsTitle);
+
+        this.friends.forEach(friend => {
+            const friendEl = Utils.createEl({
+                innerHTML: `${friend.name}: 好感度 ${friend.favorability}`,
+                style: { textAlign: 'center', margin: '5px' }
+            });
+            friendsContainer.appendChild(friendEl);
+        });
+
+        return friendsContainer;
+    }
+
+    renderGraduationPage() {
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+        const congratsText = Utils.createEl({
+            innerHTML: '恭喜你，毕业了',
+            style: { fontSize: '36px', textAlign: 'center', margin: '20px' }
+        });
+
+        const summaryText = Utils.createEl({
+            innerHTML: '你的毕业总结：',
+            style: { fontSize: '24px', textAlign: 'center', margin: '20px' }
+        });
+
+        const results = [];
+        if (this.whuer.attrs['学习'] > 24) {
+            results.push('获得优秀学生奖学金');
+        }
+        if (this.whuer.attrs['运动'] > 24) {
+            results.push('运动健将');
+        }
+
+        results.forEach(result => {
+            const resultEl = Utils.createEl({
+                innerHTML: result,
+                style: { fontSize: '24px', textAlign: 'center', margin: '10px' }
+            });
+            root.appendChild(resultEl);
+        });
+
+        const confirmButton = Utils.createEl({
+            tag: 'button',
+            innerHTML: '确定',
+            style: { display: 'block', margin: '20px auto', padding: '10px 20px' },
+            onclick: () => this.renderWelcomePage()
+        });
+
+        root.append(congratsText, summaryText, confirmButton);
     }
 }
 
 class Utils {
     static createEl(params = {}) {
         const {
-            tag = "div",
+            tag = 'div',
             className = null,
             id = null,
             innerHTML = null,
             onclick = null,
             nodes = null,
-            style = null,
+            style = null
         } = params;
 
         let el = document.createElement(tag);
@@ -101,250 +286,40 @@ class Utils {
     }
 }
 
-class WHUerAttr {
-    constructor(params) {
-        const { name, value } = params;
-        this.name = name;
-        this.value = value;
-        this.listeners = [];
-        this.el = Utils.createEl({});
-        this.update();
-    }
-
-    update() {
-        this.el.innerHTML = `${this.name}: ${this.value}`;
-    }
-
-    change(diff) {
-        const oldValue = this.value;
-        this.value += diff;
-        this.update();
-        this.listeners.forEach((listener) => listener(this.value, oldValue));
-    }
-
-    addListener(listener) {
-        this.listeners.push(listener);
-    }
-}
-
 class WHUer {
     constructor(params) {
-        const { name, major, talents } = params;
+        const { name, major, university } = params;
         this.name = name;
         this.major = major;
-        this.talents = talents;
-        this.attrs = [
-            new WHUerAttr({
-                name: "功课",
-                value: 0,
-            }),
-            new WHUerAttr({
-                name: "艺术",
-                value: 100,
-            }),
-            new WHUerAttr({
-                name: "学识",
-                value: 100,
-            }),
-            new WHUerAttr({
-                name: "情商",
-                value: 100,
-            }),
-            new WHUerAttr({
-                name: "体力",
-                value: 30,
-            }),
-        ];
-        this.el = Utils.createEl({
-            nodes: this.attrs.map((attr) => attr.el),
-        });
-
-        this.getAttr("学识").addListener((value) => {
-            if (value > 110)
-                game.placeManager
-                    .getPlace("创意城")
-                    .getOption("夜猫星")
-                    .unHide();
-        });
+        this.university = university;
+        this.attrs = {
+            '学习': 0,
+            '运动': 0,
+            '休息': 0
+        };
+        this.renderAttributes();
     }
 
-    getAttr(name) {
-        const results = this.attrs.filter((attr) => attr.name === name);
-        if (results.length < 1) {
-            console.log("(WHUerAttr, " + name + ") doesn't exist!");
-            return;
-        }
-        return results[0];
+    renderAttributes() {
+        const root = document.getElementById('attributes');
+        root.innerHTML = '';
+        Object.keys(this.attrs).forEach(key => {
+            const attrEl = Utils.createEl({
+                innerHTML: `${key}: ${this.attrs[key]}`,
+                style: { margin: '5px 0' }
+            });
+            root.appendChild(attrEl);
+        });
     }
 
     changeAttr(name, diff) {
-        this.getAttr(name)?.change(diff);
-    }
-}
-
-class PlaceManager {
-    constructor(params) {
-        const { places } = params;
-        this.places = places;
-        this.previousPlaces = [];
-        this.place = null;
-        this.el = Utils.createEl();
-    }
-
-    returnToLastPlace() {
-        if (this.previousPlaces.length < 1) {
-            console.log("无法回退到更早");
-            return;
+        if (this.attrs.hasOwnProperty(name)) {
+            this.attrs[name] += diff;
+            this.renderAttributes();
         }
-        this.place = this.previousPlaces.pop();
-        this.el.innerHTML = "";
-        this.el.append(this.place.el);
-    }
-
-    getPlace(name) {
-        const results = this.places.filter((place) => place.name === name);
-        if (results.length < 1) {
-            console.log("(Place, " + name + ") doesn't exist!");
-            return;
-        }
-        return results[0];
-    }
-
-
-
-    setPlace(name) {
-        const place = this.getPlace(name);
-        if (!place) return;
-        if (this.place) this.previousPlaces.push(this.place);
-        this.place = place;
-
-        this.el.innerHTML = "";
-        this.el.append(place.el);
     }
 }
 
-class Place {
-    constructor(params) {
-        const { name, options, root = false, desc = "" } = params;
-        this.name = name;
-        this.root = root;
-        this.desc = desc;
-        this.options = options;
-
-        const nodes = [];
-
-        nodes.push(
-            Utils.createEl({
-                innerHTML: name,
-                style: {
-                    padding: "6px",
-                    fontWeight: "bold",
-                    fontSize: "20px",
-                },
-            })
-        );
-
-        if (desc)
-            nodes.push(
-                Utils.createEl({
-                    innerHTML: desc,
-                    style: {
-                        padding: "6px",
-                        paddingTop: 0,
-                    },
-                })
-            );
-
-        nodes.push(...options.map((option) => option.el));
-
-        if (!root)
-            nodes.push(
-                Utils.createEl({
-                    innerHTML: "返回",
-                    style: {
-                        border: "1px solid black",
-                        padding: "5px",
-                        margin: "2px 0",
-                        borderRadius: "3px",
-                        backgroundColor: "lightgray",
-                    },
-                    onclick: () => {
-                        game.placeManager.returnToLastPlace();
-                    },
-                })
-            );
-
-        this.el = Utils.createEl({
-            nodes: nodes,
-        });
-    }
-
-    getOption(name) {
-        const results = this.options.filter((option) => option.name === name);
-        if (results.length < 1) {
-            console.log("(PlaceOption, " + name + ") doesn't exist");
-            return;
-        }
-        return results[0];
-    }
-}
-
-class PlaceOptionPlace {
-    constructor(params) {
-        const { name, desc = "" } = params;
-        this.name = name;
-        this.desc = desc;
-        this.el = Utils.createEl({
-            innerHTML: `${name} <i>${desc}</i>`,
-            style: {
-                border: "1px solid black",
-                padding: "5px",
-                margin: "2px 0",
-                borderRadius: "3px",
-                backgroundColor: "lightblue",
-            },
-            onclick: () => {
-                game.placeManager.setPlace(name);
-            },
-        });
-    }
-}
-
-class PlaceOptionActivity {
-    constructor(params) {
-        const { name, effects, power, hide = false } = params;
-        this.name = name;
-        this.hide = hide;
-        this.effects = effects;
-        this.power = power;
-        this.el = Utils.createEl({
-            innerHTML: name,
-            style: {
-                border: "1px solid black",
-                padding: "5px",
-                margin: "2px 0",
-                display: hide ? "none" : "",
-                borderRadius: "3px",
-                backgroundColor: "orange",
-            },
-            onclick: () => {
-                const attr = game.whuer.getAttr("体力");
-                if (attr.value < power) {
-                    console.log("没有足够的体力");
-                    return;
-                }
-                attr.change(-power);
-                effects.forEach((effect) => {
-                    game.whuer.changeAttr(effect.name, effect.diff);
-                });
-            },
-        });
-    }
-
-    unHide() {
-        this.hide = false;
-        this.el.style.display = "";
-    }
-}
-
-const game = new Game();
+document.addEventListener('DOMContentLoaded', () => {
+    const game = new Game();
+});
