@@ -6,9 +6,15 @@ class Game {
         this.whuer = null;
         this.friends = [];
         this.city = '';
+        this.goldenAutumnChosen = false; // 是否选择了金秋艺术节
+        this.goldenAutumnDirection = ''; // 金秋艺术节细分方向
+        this.goldenAutumnCount = 0; // 金秋艺术节参与次数
+        this.joinedClubs = false; // 是否选择了百团大战
         this.renderWelcomePage();
     }
-
+    getRandomEvent(probability) {
+        return Math.random() < probability;
+    }
     renderWelcomePage() {
         const root = document.getElementById('root');
         root.innerHTML = '';
@@ -70,7 +76,7 @@ class Game {
     
         const universities = [
             { name: '北京大学', majors: ['天体物理', '理论与应用力学'] },
-            { name: '武汉大学', majors: ['计算机', '电信', '英语'] },
+            { name: '武汉大学', majors: ['计算机', '电信', '英语', '法学'] },
             { name: '佳丽顿大学', majors: ['睡觉科学', '摆烂学', '糊弄学'] }
         ];
     
@@ -135,7 +141,7 @@ class Game {
                 } else {
                     // whu
                     this.whuer = new WHUer({ name: '学生', major, university });
-                    this.renderGamePage();
+                    this.renderSchoolPage();
                 }
             }
         });
@@ -143,6 +149,55 @@ class Game {
         root.append(questionText, universitySelect, majorSelect, submitButton);
     }
     
+    renderSchoolPage() {
+        let majorText;
+        majorText = `你进入了${this.whuer.major}学院，请到梅园小操场报道！`;
+    
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+        const majorTextElement = Utils.createEl({
+            innerHTML: majorText,
+            style: { fontSize: '24px', textAlign: 'center', margin: '20px' }
+        });   
+        const nextButton = Utils.createEl({
+            tag: 'button',
+            innerHTML: '去报道',
+            style: { display: 'block', margin: '20px auto', padding: '10px 20px' },
+            onclick: () => this.renderNewPage()
+        });
+        root.append(majorTextElement, nextButton);
+    }
+
+    renderNewPage() {
+        let majorText;
+        majorText = `你看到了${this.whuer.major}学院的棚子，一位帅气学长在桌子前迎接你：“Hi学弟，这边签到哟~我是${this.currentYear-1}级学长陈梓健，有问题欢迎咨询！`;
+    
+        const root = document.getElementById('root');
+        root.innerHTML = '';
+        const majorTextElement = Utils.createEl({
+            innerHTML: majorText,
+            style: { fontSize: '24px', textAlign: 'center', margin: '20px' }
+        });   
+        const nextButton = Utils.createEl({
+            tag: 'button',
+            innerHTML: '我知道了！',
+            style: { display: 'block', margin: '20px auto', padding: '10px 20px' },
+            onclick: () => {
+                    if (!this.friends.find(friend => friend.name === '陈梓健')) {
+                        const friend = { name: '陈梓健', favorability: 2 };
+                        this.friends.push(friend);
+                        alert('你结识了陈梓健学长');
+                    } else {
+                        const friend = this.friends.find(friend => friend.name === '陈梓健');
+                        friend.favorability += 2;
+                        alert('是他啊！你熟悉的陈梓健学长');
+                    }
+                    this.renderGamePage()
+            }
+        });
+        root.append(majorTextElement, nextButton);
+    }
+
     renderGamePage() {
         const root = document.getElementById('root');
         root.innerHTML = '';
@@ -157,10 +212,11 @@ class Game {
         });
 
         const options = [
-            { name: '【总图】温习功课', action: () => this.whuer.changeAttr('学习', 1) },
-            { name: '【信操】跑步', action: () => this.whuer.changeAttr('运动', 1) },
-            { name: '【寝室】睡觉', action: () => this.whuer.changeAttr('休息', 1) },
-            { name: '【寝室】打游戏', action: () => this.handleDormitory() }
+            { name: '【总图】温习功课', action: () => this.handleLibrary() },
+            { name: '【信操】跑步', action: () => this.handleRunning() },
+            { name: '【寝室】睡觉', action: () => this.whuer.changeAttr('精力', 20) },
+            { name: '【寝室】打游戏', action: () => this.handleDormitory() },
+            { name: '【创意城】约会', action: () => this.handleDating() }
         ];
 
         if (this.currentMonth === 3 || this.currentMonth === 4) {
@@ -172,8 +228,18 @@ class Game {
         if (this.currentMonth === 9) {
             options.push({ name: '【奥场】运动会', action: () => this.handleSports() });
         }
+        if (this.currentMonth === 10 && !this.joinedClubs) {
+            options.push({ name: '！百团大战！', action: () => this.handleClubJoining() });
+        }
         if (this.currentMonth === 11) {
             options.push({ name: '！金秋艺术节！', action: () => this.handleGoldenAutumn() });
+        }
+        if (this.joinedClubs) {
+            options.push(
+                { name: '【桌游社】狼人杀/阿瓦隆', action: () => this.handleBoardGames() },
+                { name: '【动漫社】社团活动', action: () => this.handleAnimeClub() },
+                { name: '【羽毛球社】打羽毛球', action: () => this.handleBadmintonClub() }
+            );
         }
 
         options.forEach(option => {
@@ -208,8 +274,49 @@ class Game {
         }
     }
 
+    handleLibrary() {
+        this.whuer.changeAttr('学识', 1);
+        if (this.getRandomEvent(0.4)) {
+            const friend = this.friends.find(friend => friend.name === '陈梓健');
+            friend.favorability += 2;
+            alert('好巧！陈梓健学长也在图书馆，你向他请教了问题');
+        } else {
+            alert('又学习了一些知识呢。');
+        }
+    }
+
+    handleRunning() {
+        this.whuer.changeAttr('体魄', 1);
+        if (this.getRandomEvent(0.5)) {
+            if (!this.friends.find(friend => friend.name === '方羽老师')) {
+                const friend = { name: '方羽老师', favorability: 2 };
+                this.friends.push(friend);
+                alert('你跑步的时候遇到了方羽老师，第一次主动跟她打了招呼');
+            }
+            else {
+                const friend = this.friends.find(friend => friend.name === '方羽老师');
+                friend.favorability += 1;
+                alert('好巧！方羽老师也在跑步！你们一起跑了一段');
+            }
+        } else {
+            alert('跑步真爽。');
+        }
+    }
+
+    handleDating() {
+        const friendNames = this.friends.map(friend => friend.name);
+        const friendList = friendNames.join('\n');
+        const choice = prompt(`你要邀请谁一起玩：\n${friendList}`);
+        const selectedFriend = this.friends.find(friend => friend.name === choice);
+
+        if (selectedFriend) {
+            selectedFriend.favorability += 20;
+            alert(`你和${choice}在创意城一起吃饭，关系又变好了。`);
+        }
+    }
+
     handleDormitory() {
-        this.whuer.changeAttr('休息', 1);
+        this.whuer.changeAttr('段位', 1);
         if (!this.friends.find(friend => friend.name === '猫猫星')) {
             const friend = { name: '猫猫星', favorability: 5 };
             this.friends.push(friend);
@@ -257,19 +364,68 @@ class Game {
             alert('你又碰到了学弟胡卜');
         }
     }
-    handleGoldenAutumn() {
-        if (!this.friends.find(friend => friend.name === '晗姐')) {
-            const friend = { name: '晗姐', favorability: 5 };
+
+    handleClubJoining() {
+        this.joinedClubs = true;
+        alert('好多社团，真有意思。');
+    }
+
+    handleBoardGames() {
+        alert('你参加了【桌游社】的狼人杀/阿瓦隆活动。');
+    }
+
+    handleAnimeClub() {
+        if (!this.friends.find(friend => friend.name === '张寒紫琼')) {
+            const friend = { name: '张寒紫琼', favorability: 5 };
             this.friends.push(friend);
-            alert('你第一次看金秋，结识了晗姐');
+            alert('你在动漫社的活动中遇到了张寒紫琼。');
         }
         else {
-            const friend = this.friends.find(friend => friend.name === '晗姐');
+            const friend = this.friends.find(friend => friend.name === '张寒紫琼');
             friend.favorability += 2;
-            alert('你发现晗姐也在这里');
+            alert('你又和张寒紫琼一起cosplay了！');
         }
     }
 
+    handleBadmintonClub() {
+        if (!this.friends.find(friend => friend.name === '胡卜')) {
+            const friend = { name: '晗姐', favorability: 5 };
+            this.friends.push(friend);
+            alert('你在羽毛球社的活动中遇到了胡卜。');
+        }
+        else {
+            const friend = this.friends.find(friend => friend.name === '胡卜');
+            friend.favorability += 2;
+            alert('你又和胡卜一起打球了！');
+        }
+    }
+
+    handleGoldenAutumn() {
+        this.goldenAutumnCount++;
+        if (!this.goldenAutumnChosen) {
+            const directions = ['金秋服饰', '金秋合唱', '金秋情景剧', '金秋辩论'];
+            const direction = prompt('你对哪个活动感兴趣：\n1. 金秋服饰\n2. 金秋合唱\n3. 金秋情景剧\n4. 金秋辩论');
+            if (direction >= 1 && direction <= 4) {
+                this.goldenAutumnDirection = directions[direction - 1];
+                this.goldenAutumnChosen = true;
+            }
+            if (!this.friends.find(friend => friend.name === '晗姐')) {
+                const friend = { name: '晗姐', favorability: 5 };
+                this.friends.push(friend);
+                alert('你第一次看金秋，结识了晗姐');
+            }
+            else {
+                const friend = this.friends.find(friend => friend.name === '晗姐');
+                friend.favorability += 2;
+                alert('你发现晗姐也在这里');
+            }
+            
+        } else {
+            const friend = this.friends.find(friend => friend.name === '晗姐');
+            friend.favorability += 5;
+            alert(`你已经选择了${this.goldenAutumnDirection}方向，又跟焊接一起参加啦！`);
+        }
+    }
     renderFriendsList() {
         const friendsContainer = Utils.createEl({
             style: { marginTop: '20px' }
@@ -305,10 +461,10 @@ class Game {
         });
 
         const results = [];
-        if (this.whuer.attrs['学习'] > 24) {
+        if (this.whuer.attrs['学识'] > 24) {
             results.push('获得优秀学生奖学金');
         }
-        if (this.whuer.attrs['运动'] > 24) {
+        if (this.whuer.attrs['体魄'] > 24) {
             results.push('运动健将');
         }
 
@@ -354,6 +510,7 @@ class Utils {
     }
 }
 
+
 class WHUer {
     constructor(params) {
         const { name, major, university } = params;
@@ -361,9 +518,13 @@ class WHUer {
         this.major = major;
         this.university = university;
         this.attrs = {
-            '学习': 0,
-            '运动': 0,
-            '休息': 0
+            '学识': 20,
+            '情商': 20,
+            '体魄': 20,
+            '精力': 50,
+            '心情': 50,
+            '钱': 0,
+            '段位': 0,
         };
         this.renderAttributes();
     }
