@@ -120,23 +120,25 @@ class Game {
                 const major = majorSelect.value;
     
                 if (university === '北京大学') {
-                    if (confirm('你的分数可能进不了北京大学哦，不如看看平替吧')) {
-                        // 返回选择界面
-                        this.renderUniversitySelectionPage();
-                    } else {
+                    if (confirm('你的分数可能进不了北京大学哦，真的不考虑看看平替吗？')) {
                         // 落榜，重新开始游戏
                         alert('很遗憾，你落榜了！');
                         this.renderWelcomePage();
+                    } else {
+                        // 返回选择界面
+                        this.renderUniversitySelectionPage();
                     }
                 } else if (university === '佳丽顿大学') {
                     if (confirm('你的水平完全可以去更好的学校啊，真的不后悔吗？')) {
-                        // 返回选择界面
-                        this.renderUniversitySelectionPage();
-                    } else {
                         // 被录取进佳丽顿大学并发现学校倒闭
                         alert('恭喜你，被录取进佳丽顿大学！');
                         alert('去上学的时候发现学校倒闭了');
                         this.renderWelcomePage();
+                        // 返回选择界面
+                        this.renderUniversitySelectionPage();
+                    } else {
+                        // 返回选择界面
+                        this.renderUniversitySelectionPage();
                     }
                 } else {
                     // whu
@@ -216,9 +218,10 @@ class Game {
             { name: '【信操】跑步', action: () => this.handleRunning() },
             { name: '【寝室】睡觉', action: () => this.whuer.changeAttr('精力', 20) },
             { name: '【寝室】打游戏', action: () => this.handleDormitory() },
-            { name: '【创意城】约会', action: () => this.handleDating() }
         ];
-
+        if (this.currentYear > this.initialYear) {
+            options.push({ name: '【创意城】约会', action: () => this.handleDating() });
+        }
         if (this.currentMonth === 3 || this.currentMonth === 4) {
             options.push({ name: '【樱花大道】赏樱', action: () => this.handleSakura() });
         }
@@ -389,7 +392,7 @@ class Game {
 
     handleBadmintonClub() {
         if (!this.friends.find(friend => friend.name === '胡卜')) {
-            const friend = { name: '晗姐', favorability: 5 };
+            const friend = { name: '胡卜', favorability: 5 };
             this.friends.push(friend);
             alert('你在羽毛球社的活动中遇到了胡卜。');
         }
