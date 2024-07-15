@@ -10,4 +10,7 @@ export default defineConfig({
             "@": "/src",
         },
     },
+    build: {
+        outDir: "docs", // 将输出目录从 dist 改为 docs
+    },
 });
