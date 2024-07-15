@@ -96,7 +96,7 @@ export class Whuer {
         });
     }
 
-    updateFriendFavorability(name: string, amount: number) {
+    addFriendFavorability(name: string, amount: number) {
         const friend = this.friends.find((friend) => friend.name === name);
         if (friend) {
             friend.favorability += amount;

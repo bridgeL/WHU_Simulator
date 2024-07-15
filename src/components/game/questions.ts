@@ -25,6 +25,10 @@ export const allQuestions: QuestionType[] = [
                 },
             },
             {
+                text: "【创意城】吃饭",
+                next: () => 2,
+            },
+            {
                 text: "【信操】跑步",
                 next: (whuer) => {
                     whuer.changeAttr("体魄", 1);
@@ -35,7 +39,7 @@ export const allQuestions: QuestionType[] = [
                                 "你跑步的时候遇到了方羽老师，第一次主动跟她打了招呼"
                             );
                         } else {
-                            whuer.updateFriendFavorability("方羽老师", 1);
+                            whuer.addFriendFavorability("方羽老师", 1);
                             alert("好巧！方羽老师也在跑步！你们一起跑了一段");
                         }
                     } else {
@@ -63,7 +67,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("猫猫星", 5);
                         alert("你结识了室友猫猫星");
                     } else {
-                        whuer.updateFriendFavorability("猫猫星", 2);
+                        whuer.addFriendFavorability("猫猫星", 2);
                         alert("你又和室友猫猫星一起上分了");
                     }
                     whuer.nextMonth();
@@ -78,7 +82,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("晗姐", 5);
                         alert("你结识了晗姐");
                     } else {
-                        whuer.updateFriendFavorability("晗姐", 2);
+                        whuer.addFriendFavorability("晗姐", 2);
                         alert("你遇到晗姐了，她也来看樱花");
                     }
                     whuer.nextMonth();
@@ -93,7 +97,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("新阳", 5);
                         alert("你结识了新阳");
                     } else {
-                        whuer.updateFriendFavorability("新阳", 2);
+                        whuer.addFriendFavorability("新阳", 2);
                         alert("你又碰到了新阳");
                     }
                     whuer.nextMonth();
@@ -108,7 +112,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("胡卜", 5);
                         alert("你结识了运动系学弟胡卜");
                     } else {
-                        whuer.updateFriendFavorability("胡卜", 2);
+                        whuer.addFriendFavorability("胡卜", 2);
                         alert("你又碰到了学弟胡卜");
                     }
                     whuer.nextMonth();
@@ -145,7 +149,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("晗姐", 5);
                         alert("你第一次看金秋，结识了晗姐");
                     } else {
-                        whuer.updateFriendFavorability("晗姐", 2);
+                        whuer.addFriendFavorability("晗姐", 2);
                         alert("你发现晗姐也在这里");
                     }
                     whuer.nextMonth();
@@ -171,7 +175,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("张寒紫琼", 5);
                         alert("你在动漫社的活动中遇到了张寒紫琼。");
                     } else {
-                        whuer.updateFriendFavorability("张寒紫琼", 2);
+                        whuer.addFriendFavorability("张寒紫琼", 2);
                         alert("你又和张寒紫琼一起cosplay了！");
                     }
                     whuer.nextMonth();
@@ -187,7 +191,7 @@ export const allQuestions: QuestionType[] = [
                         whuer.makeFriendWith("胡卜", 5);
                         alert("你在羽毛球社的活动中遇到了胡卜。");
                     } else {
-                        whuer.updateFriendFavorability("胡卜", 2);
+                        whuer.addFriendFavorability("胡卜", 2);
                         alert("你又和胡卜一起打球了！");
                     }
                     whuer.nextMonth();
@@ -203,13 +207,23 @@ export const allQuestions: QuestionType[] = [
         text: "你要邀请谁一起玩？",
         options: [
             {
-                text: "徐晗",
+                text: "猫猫星",
+                next: (whuer) => {
+                    whuer.addFriendFavorability("猫猫星", 5);
+                    whuer.nextMonth();
+                    whuer.update();
+                    return 1;
+                },
+                condition: (whuer) => whuer.isFriendWith("猫猫星"),
+            },
+            {
+                text: "一个人吃饭",
                 next: (whuer) => {
                     whuer.nextMonth();
                     whuer.update();
                     return 1;
                 },
-                condition: (whuer) => whuer.isFriendWith("徐晗"),
+                condition: () => true,
             },
             {
                 text: "算了",
