@@ -19,8 +19,16 @@ class Game {
         const root = document.getElementById("root");
         root.innerHTML = "";
         const welcomeText = Utils.createEl({
-            innerHTML: "欢迎来到-武大模拟器demo版，请开启你的2088",
-            style: { fontSize: "48px", textAlign: "center", margin: "20px" },
+            innerHTML: "欢迎来到",
+            style: { fontSize: "30px", textAlign: "center", margin: "20px" },
+        });
+        const welcomeText2 = Utils.createEl({
+            innerHTML: "武大模拟器demo版",
+            style: { fontSize: "40px", textAlign: "center", margin: "20px" },
+        });
+        const welcomeText3 = Utils.createEl({
+            innerHTML: "请开启你的珞珈人生",
+            style: { fontSize: "30px", textAlign: "center", margin: "20px" },
         });
         const startButton = Utils.createEl({
             tag: "button",
@@ -32,7 +40,7 @@ class Game {
             },
             onclick: () => this.renderCityPage(),
         });
-        root.append(welcomeText, startButton);
+        root.append(welcomeText,welcomeText2,welcomeText3, startButton);
     }
 
     renderCityPage() {
@@ -55,7 +63,15 @@ class Game {
         if (isMajorCity) {
             const randomIndex = Math.floor(Math.random() * majorCities.length);
             this.city = majorCities[randomIndex];
-            cityText = `你出生在${this.city}，家境优渥，开开心心度过了人生的前18年，要步入大学了，你成绩不错，高考稳定发挥，获得了565分的好成绩！`;
+            if(this.city === "武汉"){
+                cityText = `你出生在${this.city}，从小就把武汉大学作为你的目标，你努力学习，高考稳定发挥，获得了638分的好成绩！`;
+            }
+            else if(this.city === "上海"){
+                cityText = `你出生在${this.city}，家境优渥，开开心心度过了人生的前18年，要步入大学了，你成绩不错，高考稳定发挥，获得了568分的好成绩！`;
+            }
+            else{
+                cityText = `你出生在${this.city}，家境优渥，开开心心度过了人生的前18年，要步入大学了，你成绩不错，高考稳定发挥，获得了638分的好成绩！`;
+            }
         } else {
             const randomIndex = Math.floor(Math.random() * minorCities.length);
             this.city = minorCities[randomIndex];
@@ -91,9 +107,9 @@ class Game {
         });
 
         const universities = [
-            { name: "北京大学", majors: ["天体物理", "理论与应用力学"] },
-            { name: "武汉大学", majors: ["计算机", "电信", "英语", "法学"] },
-            { name: "佳丽顿大学", majors: ["睡觉科学", "摆烂学", "糊弄学"] },
+            { name: "北京大学", majors: ["天体物理", "理论与应用力学","哲学","法学","国际政治","古生物学"] },
+            { name: "武汉大学", majors: ["计算机", "电子信息", "外语", "法学","经济与管理"] },
+            { name: "佳丽顿大学", majors: ["糊弄学", "睡觉科学", "摆烂学","抱佛脚学","周易与算命"] },
         ];
 
         const universitySelect = Utils.createEl({
@@ -161,11 +177,9 @@ class Game {
                         )
                     ) {
                         // 被录取进佳丽顿大学并发现学校倒闭
-                        showToast("恭喜你，被录取进佳丽顿大学！");
+                        alert('恭喜你，被录取进佳丽顿大学！');
                         showToast("去上学的时候发现学校倒闭了");
                         this.renderWelcomePage();
-                        // 返回选择界面
-                        this.renderUniversitySelectionPage();
                     } else {
                         // 返回选择界面
                         this.renderUniversitySelectionPage();
@@ -292,29 +306,33 @@ class Game {
         }
         if (this.currentMonth === 10 && !this.joinedClubs) {
             options.push({
-                name: "！百团大战！",
+                name: "-百团大战-",
                 action: () => this.handleClubJoining(),
             });
         }
         if (this.currentMonth === 11) {
             options.push({
-                name: "！金秋艺术节！",
+                name: "-金秋艺术节-",
                 action: () => this.handleGoldenAutumn(),
             });
         }
         if (this.joinedClubs) {
             options.push(
                 {
-                    name: "【桌游社】狼人杀/阿瓦隆",
+                    name: "【桌游社】",
                     action: () => this.handleBoardGames(),
                 },
                 {
-                    name: "【动漫社】社团活动",
+                    name: "【动漫社】",
                     action: () => this.handleAnimeClub(),
                 },
                 {
-                    name: "【羽毛球社】打羽毛球",
+                    name: "【羽毛球社】",
                     action: () => this.handleBadmintonClub(),
+                },
+                {
+                    name: "【滑板社】",
+                    action: () => this.handleSkateClub(),
                 }
             );
         }
@@ -356,14 +374,30 @@ class Game {
 
     handleLibrary() {
         this.whuer.changeAttr("学识", 1);
-        if (this.getRandomEvent(0.4)) {
-            const friend = this.friends.find(
-                (friend) => friend.name === "陈梓健"
-            );
-            friend.favorability += 2;
-            showToast("好巧！陈梓健学长也在图书馆，你向他请教了问题");
-        } else {
-            showToast("又学习了一些知识呢。");
+        const friend = this.friends.find(
+            (friend) => friend.name === "陈梓健"
+        );
+        if(friend.favorability < 10){
+            if (this.getRandomEvent(0.4)) {
+                friend.favorability += 2;
+                showToast("好巧！陈梓健学长也在图书馆，你向他请教了一些问题");
+            }
+            else{
+                showToast("又学习了一些没用的知识呢");
+            }
+        }
+        else if(friend.favorability >=10 && friend.favorability < 50){
+            if (this.getRandomEvent(0.6)) {
+                friend.favorability += 3;
+                showToast("你又碰到了陈梓健学长，真是有缘分，你们是约好了吗？");
+            }
+            else{
+                showToast("又学习了一些知识呢");
+            }
+        }
+        else if(friend.favorability >=50){
+            friend.favorability += 5;
+            showToast("你和陈梓健学长一起学习，你们之间的氛围变得暧昧了起来");
         }
     }
 
@@ -382,7 +416,7 @@ class Game {
                 showToast("好巧！方羽老师也在跑步！你们一起跑了一段");
             }
         } else {
-            showToast("跑步真爽。");
+            showToast("跑步真爽！");
         }
     }
 
@@ -394,101 +428,149 @@ class Game {
             );
 
             if (selectedFriend) {
-                selectedFriend.favorability += 20;
-                showToast(`你和${choice}在创意城一起吃饭，关系又变好了。`);
+                if(selectedFriend.favorability < 50){
+                    selectedFriend.favorability += 20;
+                    showToast(`你和${choice}在创意城一起吃饭，关系又变好了。`);
+                }
+                else{
+                    selectedFriend.favorability += 20;
+                    showToast(`你和${choice}在创意城约会，你们都很期待。`);
+                }
             }
         });
     }
 
     handleDormitory() {
         this.whuer.changeAttr("段位", 1);
-        if (!this.friends.find((friend) => friend.name === "猫猫星")) {
-            const friend = { name: "猫猫星", favorability: 5 };
-            this.friends.push(friend);
-            showToast("你结识了室友猫猫星");
-        } else {
-            const friend = this.friends.find(
-                (friend) => friend.name === "猫猫星"
-            );
-            friend.favorability += 2;
-            showToast("你又和室友猫猫星一起上分了");
+        if (this.getRandomEvent(0.5)) {
+            if (!this.friends.find((friend) => friend.name === "蔡豚")) {
+                const friend = { name: "蔡豚", favorability: 5 };
+                this.friends.push(friend);
+                showToast("你在打FPS游戏时遇到了一个名叫蔡豚的网友，你觉得他很菜，想带带他");
+            } else {
+                const friend = this.friends.find(
+                    (friend) => friend.name === "蔡豚"
+                );
+                friend.favorability += 2;
+                showToast("你又和蔡豚一起上分了");
+            }
+        }
+        else{
+            if (!this.friends.find((friend) => friend.name === "王禹玥")) {
+                const friend = { name: "王禹玥", favorability: 5 };
+                this.friends.push(friend);
+                showToast("你看到同班同学王禹玥也在线，邀请她一起五排");
+            } else {
+                const friend = this.friends.find(
+                    (friend) => friend.name === "王禹玥"
+                );
+                friend.favorability += 2;
+                showToast("你看到王禹玥也在线，又拉她一起上分了");
+            }
         }
     }
 
     handleSakura() {
-        if (!this.friends.find((friend) => friend.name === "晗姐")) {
-            const friend = { name: "晗姐", favorability: 5 };
+        if (!this.friends.find((friend) => friend.name === "李猫")) {
+            const friend = { name: "李猫", favorability: 5 };
             this.friends.push(friend);
-            showToast("你结识了晗姐");
+            showToast("你想挤进人堆去看樱花，却没带校园卡，值岗的李猫还是让你进去了");
         } else {
             const friend = this.friends.find(
-                (friend) => friend.name === "晗姐"
+                (friend) => friend.name === "李猫"
             );
             friend.favorability += 2;
-            showToast("你遇到晗姐了，她也来看樱花");
+            showToast("好巧！值岗的还是上次的李猫");
         }
     }
     handleOldLib() {
-        if (!this.friends.find((friend) => friend.name === "新阳")) {
-            const friend = { name: "新阳", favorability: 5 };
+        if (!this.friends.find((friend) => friend.name === "李猫")) {
+            const friend = { name: "李猫", favorability: 5 };
             this.friends.push(friend);
-            showToast("你结识了新阳");
+            showToast("好像看樱花的时候也遇到过他，叫..李猫吗？");
         } else {
             const friend = this.friends.find(
-                (friend) => friend.name === "新阳"
+                (friend) => friend.name === "李猫"
             );
             friend.favorability += 2;
-            showToast("你又碰到了新阳");
+            showToast("又是李猫，这么多年了你怎么还没毕业？");
         }
     }
     handleSports() {
-        if (!this.friends.find((friend) => friend.name === "胡卜")) {
-            const friend = { name: "胡卜", favorability: 5 };
+        if (!this.friends.find((friend) => friend.name === "胡寒树")) {
+            const friend = { name: "胡寒树", favorability: 5 };
             this.friends.push(friend);
-            showToast("你结识了运动系学弟胡卜");
+            showToast("这次的百米第一你也有所耳闻，好像是数学系学弟胡寒树");
         } else {
             const friend = this.friends.find(
-                (friend) => friend.name === "胡卜"
+                (friend) => friend.name === "胡寒树"
             );
             friend.favorability += 2;
-            showToast("你又碰到了学弟胡卜");
+            showToast("胡寒树学弟又来参加了，他果然年年都是第一");
         }
     }
 
     handleClubJoining() {
         this.joinedClubs = true;
-        showToast("好多社团，真有意思。");
+        this.whuer.changeAttr("钱", -10);
+        showToast("好多社团，真有意思，先交个会费吧~");
     }
 
     handleBoardGames() {
-        showToast("你参加了【桌游社】的狼人杀/阿瓦隆活动。");
+        if (this.friends.find((friend) => friend.name === "陈梓健")) {
+            const friend = this.friends.find(
+                (friend) => friend.name === "陈梓健"
+            );
+            friend.favorability += 2;
+            showToast("你发现陈梓健也来玩了！看来他也喜欢桌游");
+        }
+        if (this.friends.find((friend) => friend.name === "李猫")) {
+            const friend = this.friends.find(
+                (friend) => friend.name === "李猫"
+            );
+            friend.favorability += 2;
+            showToast("你发现李猫也来玩了！看来他也喜欢桌游");
+        }
     }
 
     handleAnimeClub() {
         if (!this.friends.find((friend) => friend.name === "张寒紫琼")) {
             const friend = { name: "张寒紫琼", favorability: 5 };
             this.friends.push(friend);
-            showToast("你在动漫社的活动中遇到了张寒紫琼。");
+            showToast("你在动漫社的活动中遇到了一个二次元妹子，叫张寒紫琼。");
         } else {
             const friend = this.friends.find(
                 (friend) => friend.name === "张寒紫琼"
             );
             friend.favorability += 2;
-            showToast("你又和张寒紫琼一起cosplay了！");
+            showToast("你又和张寒紫琼一起出cos了！");
         }
     }
 
     handleBadmintonClub() {
-        if (!this.friends.find((friend) => friend.name === "胡卜")) {
-            const friend = { name: "胡卜", favorability: 5 };
+        if (!this.friends.find((friend) => friend.name === "胡寒树")) {
+            const friend = { name: "胡寒树", favorability: 5 };
             this.friends.push(friend);
-            showToast("你在羽毛球社的活动中遇到了胡卜。");
+            showToast("你在羽毛球社的活动中遇到了大佬胡寒树，有专业运动员一样的水平");
         } else {
             const friend = this.friends.find(
-                (friend) => friend.name === "胡卜"
+                (friend) => friend.name === "胡寒树"
             );
             friend.favorability += 2;
-            showToast("你又和胡卜一起打球了！");
+            showToast("你又和胡寒树一起打球了！");
+        }
+    }
+    handleSkateClub() {
+        if (!this.friends.find((friend) => friend.name === "王禹玥")) {
+            const friend = { name: "王禹玥", favorability: 5 };
+            this.friends.push(friend);
+            showToast("你看到了一个滑板少女，她也是你们专业的，叫王禹玥");
+        } else {
+            const friend = this.friends.find(
+                (friend) => friend.name === "王禹玥"
+            );
+            friend.favorability += 2;
+            showToast("你又来卓尔滑板了，王禹玥也在这里练习呢");
         }
     }
 
@@ -505,10 +587,10 @@ class Game {
                 this.goldenAutumnDirection = result;
                 this.goldenAutumnChosen = true;
 
-                if (!this.friends.find((friend) => friend.name === "晗姐")) {
+                if (!this.friends.find((friend) => friend.name === "")) {
                     const friend = { name: "晗姐", favorability: 5 };
                     this.friends.push(friend);
-                    showToast("你第一次看金秋，结识了晗姐");
+                    showToast("你第一次看金秋，遇到了晗姐");
                 } else {
                     const friend = this.friends.find(
                         (friend) => friend.name === "晗姐"
@@ -523,7 +605,7 @@ class Game {
             );
             friend.favorability += 5;
             showToast(
-                `你已经选择了${this.goldenAutumnDirection}方向，又跟焊接一起参加啦！`
+                `你参与了${this.goldenAutumnDirection}，和晗姐一起准备啦！`
             );
         }
     }
@@ -631,7 +713,7 @@ class WHUer {
             体魄: 20,
             精力: 50,
             心情: 50,
-            钱: 0,
+            钱: 20,
             段位: 0,
         };
         this.renderAttributes();
